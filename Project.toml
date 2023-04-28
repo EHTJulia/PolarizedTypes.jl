@@ -11,6 +11,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 
 [compat]
+ChainRulesCore = "1"
 julia = "1.6"
 
 [extras]
