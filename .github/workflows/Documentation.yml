@@ -18,7 +18,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Libs
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
         with:
