@@ -6,12 +6,7 @@ makedocs(;
     authors="Paul Tiede <ptiede91@gmail.com> and contributors",
     repo="https://github.com/EHTJulia/PolarizedTypes.jl/blob/{commit}{path}#{line}",
     sitename="PolarizedTypes.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://ehtjulia.github.io/PolarizedTypes.jl",
-        edit_link="main",
-        assets=String[],
-    ),
+    format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
     ],
@@ -19,5 +14,6 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/EHTJulia/PolarizedTypes.jl",
+    push_preview=false,
     devbranch="main",
 )
