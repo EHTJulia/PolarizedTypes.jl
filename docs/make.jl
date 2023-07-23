@@ -6,11 +6,11 @@ DocMeta.setdocmeta!(PolarizedTypes, :DocTestSetup, :(using PolarizedTypes); recu
 makedocs(;
     modules=[PolarizedTypes],
     authors="Paul Tiede <ptiede91@gmail.com> and contributors",
-    repo="https://github.com/ptiede/PolarizedTypes.jl/blob/{commit}{path}#{line}",
+    repo="https://github.com/EHTJulia/PolarizedTypes.jl/blob/{commit}{path}#{line}",
     sitename="PolarizedTypes.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://ptiede.github.io/PolarizedTypes.jl",
+        canonical="https://ehtjulia.github.io/PolarizedTypes.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/ptiede/PolarizedTypes.jl",
+    repo="github.com/EHTJulia/PolarizedTypes.jl",
     devbranch="main",
 )
