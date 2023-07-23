@@ -1,8 +1,6 @@
 using PolarizedTypes
 using Documenter
 
-DocMeta.setdocmeta!(PolarizedTypes, :DocTestSetup, :(using PolarizedTypes); recursive=true)
-
 makedocs(;
     modules=[PolarizedTypes],
     authors="Paul Tiede <ptiede91@gmail.com> and contributors",
