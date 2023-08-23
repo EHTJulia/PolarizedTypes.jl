@@ -205,7 +205,7 @@ using Test
         prc =  ChainRulesCore.ProjectTo(c)
         @test prc(cmat) == c
         @test prc(c) == c
-        @test_throws "First basis does" prc(CoherencyMatrix(cmat, LinBasis()))
-        @test_throws "Second basis does" prc(CoherencyMatrix(cmat, CirBasis()))
+        @test_throws AssertionError prc(CoherencyMatrix(cmat, LinBasis()))
+        @test_throws AssertionError prc(CoherencyMatrix(cmat, CirBasis()))
     end
 end
