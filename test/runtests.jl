@@ -1,4 +1,6 @@
 using PolarizedTypes
+using StaticArrays
+using ChainRulesCore
 using JET
 using Test
 
@@ -189,5 +191,21 @@ using Test
             @test evpa(c) ≈ evpa(s)
         end
 
+    end
+
+    @testset "ChainRules" begin
+        I = 2.0 + 0.5im
+        Q = rand(ComplexF64) - 0.5
+        U = rand(ComplexF64) - 0.5
+        V = rand(ComplexF64) - 0.5
+        s = StokesParams(I, Q, U, V)
+        c = CoherencyMatrix{CirBasis, LinBasis}(s)
+
+        cmat = SMatrix(c)
+        prc =  ChainRulesCore.ProjectTo(c)
+        @test prc(cmat) == c
+        @test prc(c) == c
+        @test_throws "First basis does" prc(CoherencyMatrix(cmat, LinBasis()))
+        @test_throws "Second basis does" prc(CoherencyMatrix(cmat, CirBasis()))
     end
 end
