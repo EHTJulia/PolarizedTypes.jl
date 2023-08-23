@@ -97,3 +97,9 @@ function basis_transform end
 
 @inline basis_transform(::Type{T}, p::Pair{B1,B2}) where {T, B1<:PolBasis, B2<:PolBasis} = basis_transform(T, B1(), B2())
 @inline basis_transform(::Pair{B1,B2}) where {B1<:PolBasis, B2<:PolBasis} = basis_transform(Float64, B1(), B2())
+
+@inline function basis_transform(c::CoherencyMatrix{B1, B2, Complex{T}}, e1::PolBasis, e2::PolBasis) where {B1, B2, T}
+    t1 = basis_transform(T, B1()=>e1)
+    t2 = basis_transform(T, e2=>B2())
+    return CoherencyMatrix(t1*c*t2, e1, e2)
+end

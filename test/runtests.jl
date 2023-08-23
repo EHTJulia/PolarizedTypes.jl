@@ -92,11 +92,30 @@ using Test
         @test s ≈ StokesParams(CoherencyMatrix(s, PolBasis{YPol,XPol}(), PolBasis{LPol,RPol}()))
     end
 
+    @testset "Mixed Pol" begin
+        I = 2.0 + 0.5im
+        Q = rand(ComplexF64) - 0.5
+        U = rand(ComplexF64) - 0.5
+        V = rand(ComplexF64) - 0.5
+        s = StokesParams(I, Q, U, V)
+
+        c1 = CoherencyMatrix(s, CirBasis(), LinBasis())
+        c2 = CoherencyMatrix{CirBasis, LinBasis}(s)
+        c3 = basis_transform(CoherencyMatrix(s, CirBasis()), CirBasis(), LinBasis())
+        @test c1 ≈ c2
+        @test c1 ≈ c3
+
+        @test StokesParams(c1) ≈ s
+        @test StokesParams(c2) ≈ s
+        @test StokesParams(c3) ≈ s
+    end
+
     @testset "Conversion Consistency" begin
         s = StokesParams(1.0 .+ 0.0im, 0.2 + 0.2im, 0.2 - 0.2im, 0.1+0.05im)
         c_lin1 = CoherencyMatrix(s, LinBasis())
         c_lin2 = CoherencyMatrix(s, PolBasis{XPol,YPol}())
         c_lin3 = CoherencyMatrix(s, PolBasis{XPol,YPol}(), PolBasis{XPol,YPol}())
+
 
         @test c_lin1 ≈ c_lin2 ≈ c_lin3
 
@@ -112,6 +131,8 @@ using Test
         @test t2*c_cir1*t1 ≈ c_lin1
         @test t1*c_lin1*t2 ≈ c_cir1
 
+        @test_throws ArgumentError StokesParams(t1*c_lin1*t2)
+
         # Test the mixed basis
         @test c_cir1*t1 ≈ t1*c_lin1
         @test c_lin1*t2 ≈ t2*c_cir1
@@ -124,5 +145,49 @@ using Test
         @test_opt StokesParams(CoherencyMatrix(s, CirBasis()))
         @test_opt StokesParams(CoherencyMatrix(s, LinBasis(), CirBasis()))
         @test_opt StokesParams(CoherencyMatrix(s, LinBasis(), CirBasis(), LinBasis()))
+    end
+
+    @testset "Polarized Functions" begin
+        s = StokesParams(2.0, 0.25, -0.25, 0.25)
+        @test linearpol(s) == complex(0.25, -0.25)
+        @test evpa(s) ≈ atan(-0.5, 0.5)/2
+        @test s[2:end] ≈ polarization(s)
+
+
+        slin = StokesParams(2.0, 0.2, 0.2, 0.0)
+        fp = fracpolarization(slin)
+        @test complex(fp[1], fp[2]) ≈ linearpol(slin)/slin.I
+        @test fp[end] ≈ 0
+
+        @testset "ellipse" begin
+            p = polellipse(s)
+            @test p.a*p.b ≈ s.V^2/4
+            @test p.evpa ≈ evpa(s)
+            plin = polellipse(slin)
+            @test plin.a ≈ (abs(linearpol(slin)))
+            @test isapprox(plin.b, 0, atol=1e-8)
+            @test plin.evpa ≈ evpa(slin)
+            @test p.sn ≈ sign(s.V)
+        end
+
+
+        @test mpol(s) ≈ complex(0.25, -0.25)/2
+
+        @testset "Complex Vis" begin
+            I = 2.0 + 0.5im
+            Q = rand(ComplexF64) - 0.5
+            U = rand(ComplexF64) - 0.5
+            V = rand(ComplexF64) - 0.5
+            s = StokesParams(I, Q, U, V)
+            @test mbreve(s) == m̆(s)
+            c = CoherencyMatrix{CirBasis, LinBasis}(s)
+            @test linearpol(c) ≈ linearpol(s)
+            @test polarization(c) ≈ polarization(s)
+            @test fracpolarization(c) ≈ fracpolarization(s)
+            @test m̆(c) ≈ m̆(s)
+            @test mbreve(c) ≈ mbreve(s)
+            @test evpa(c) ≈ evpa(s)
+        end
+
     end
 end

@@ -4,12 +4,14 @@ using ChainRulesCore
 using DocStringExtensions
 using PrecompileTools
 using StaticArrays
+using LinearAlgebra
 
 # Write your package code here.
-export StokesParams, CoherencyMatrix, SingleStokes, RPol, LPol, XPol, YPol,
+export StokesParams, CoherencyMatrix, RPol, LPol, XPol, YPol,
        PolBasis, CirBasis, LinBasis,
        basis_components, basis_transform, coherencymatrix, stokesparams,
-       linearpol, mbreve, m̆, evpa
+       linearpol, mbreve, m̆, evpa, polarization, fracpolarization, mpol,
+       polellipse
 
 include("types.jl")
 include("basis_transforms.jl")

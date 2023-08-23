@@ -87,6 +87,8 @@ struct StokesParams{T} <: FieldVector{4,T}
     V::T
 end
 
+StokesParams(::SArray) = throw(ArgumentError("argument does not have a basis please wrap it in a `CoherencyMatrix`"))
+
 
 StaticArraysCore.similar_type(::Type{StokesParams}, ::Type{T}, s::Size{(4,)}) where {T} = StokesParams{T}
 
@@ -281,6 +283,10 @@ end
     RL = (Q + 1im*U)
     LL = complex((I - V))
     return CoherencyMatrix(RR, LR, RL, LL, CirBasis(), CirBasis())
+end
+
+@inline function CoherencyMatrix{B1, B2}(s::StokesParams) where {B1, B2}
+    return CoherencyMatrix(s, B1(), B2())
 end
 
 
