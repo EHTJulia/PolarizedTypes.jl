@@ -239,17 +239,21 @@ For example
 CoherencyMatrix(s, CircBasis())
 ```
 will give the coherency matrix
-
-   |I+V   Q+iU|
-   |Q-iU  I-V |
+```
+   I+V   Q+iU
+   Q-iU  I-V
+```
 
 while
 ```julia
 CoherencyMatrix(s, LinBasis())
 ```
 will give
-    |I+Q   U+iV|
-    |U-iV  I-Q |
+
+```
+    I+Q   U+iV
+    U-iV  I-Q
+```
 
 # Notes
 
