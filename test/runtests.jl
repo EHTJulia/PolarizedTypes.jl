@@ -9,6 +9,8 @@ using Test
         @test basis_transform(PolBasis{XPol,YPol}()=>PolBasis{RPol,LPol}())*basis_transform(PolBasis{RPol,LPol}()=>PolBasis{XPol,YPol}()) ≈ [1.0 0.0;0.0 1.0]
         @test basis_transform(PolBasis{RPol,LPol}()=>PolBasis{XPol,YPol}())*basis_transform(PolBasis{XPol,YPol}()=>PolBasis{RPol,LPol}()) ≈ [1.0 0.0;0.0 1.0]
 
+        @test basis_transform(CirBasis(), LinBasis()) == basis_transform(CirBasis()=>LinBasis())
+
         for (e1, e2) in [(RPol, LPol), (LPol, RPol),
                          (XPol, YPol), (XPol, YPol),
                          ]
@@ -81,6 +83,10 @@ using Test
         @test StokesParams(cYX) ≈ inv(2)*[0.0, 0.0, 0.5, 0.5im]
         @test StokesParams(cXY) ≈ inv(2)*[0.0, 0.0, 0.5, -0.5im]
         @test StokesParams(cYY) ≈ inv(2)*[0.5, -0.5, 0.0, 0.0]
+
+        @test StaticArraysCore.similar_type(CoherencyMatrix{CirBasis,LinBasis}, Float64, Size(2,2)) == CoherencyMatrix{CirBasis,LinBasis,Float64}
+        @test StaticArraysCore.similar_type(StokesParams, Float64, Size(4,)) == StokesParams{Float64}
+
 
     end
 
