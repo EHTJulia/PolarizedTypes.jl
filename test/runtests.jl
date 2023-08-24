@@ -11,6 +11,17 @@ using Test
 
         @test basis_transform(CirBasis(), LinBasis()) == basis_transform(CirBasis()=>LinBasis())
 
+        @test basis_components(RPol(), CirBasis()) ≈ basis_transform(CirBasis()=>CirBasis())*SVector(1.0, 0.0)
+        @test basis_components(LPol(), CirBasis()) ≈ basis_transform(CirBasis()=>CirBasis())*SVector(0.0, 1.0)
+        @test basis_components(RPol(), LinBasis()) ≈ basis_transform(CirBasis()=>LinBasis())*SVector(1.0, 0.0)
+        @test basis_components(LPol(), LinBasis()) ≈ basis_transform(CirBasis()=>LinBasis())*SVector(0.0, 1.0)
+
+        @test basis_components(XPol(), CirBasis()) ≈ basis_transform(LinBasis()=>CirBasis())*SVector(1.0, 0.0)
+        @test basis_components(YPol(), CirBasis()) ≈ basis_transform(LinBasis()=>CirBasis())*SVector(0.0, 1.0)
+        @test basis_components(XPol(), LinBasis()) ≈ basis_transform(LinBasis()=>LinBasis())*SVector(1.0, 0.0)
+        @test basis_components(YPol(), LinBasis()) ≈ basis_transform(LinBasis()=>LinBasis())*SVector(0.0, 1.0)
+
+
         for (e1, e2) in [(RPol, LPol), (LPol, RPol),
                          (XPol, YPol), (XPol, YPol),
                          ]
