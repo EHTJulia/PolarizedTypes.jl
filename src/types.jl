@@ -90,7 +90,7 @@ end
 StokesParams(::SArray) = throw(ArgumentError("argument does not have a basis please wrap it in a `CoherencyMatrix`"))
 
 
-StaticArraysCore.similar_type(::Type{StokesParams}, ::Type{T}, s::Size{(4,)}) where {T} = StokesParams{T}
+StaticArraysCore.similar_type(::Type{<:StokesParams}, ::Type{T}, s::Size{(4,)}) where {T} = StokesParams{T}
 
 
 """

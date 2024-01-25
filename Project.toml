@@ -1,7 +1,7 @@
 name = "PolarizedTypes"
 uuid = "d3c5d4cd-a8ee-40d6-aac7-e34df5a20044"
 authors = ["Paul Tiede <ptiede91@gmail.com> and contributors"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
