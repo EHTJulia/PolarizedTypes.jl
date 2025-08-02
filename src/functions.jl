@@ -63,8 +63,7 @@ end
 
 Returns the (Q/I, U/I, V/I) fractional polarization vector as a 3-element static vector.
 """
-fracpolarization(s::StokesParams{T}) where {T} = polarization(s)*inv(s.I + eps(T))
-fracpolarization(s::StokesParams{Complex{T}}) where {T} = polarization(s)*inv(s.I + eps(T))
+fracpolarization(s::StokesParams) = polarization(s)*inv(s.I)
 
 """
     mpol(m::StokesParameters{<:Real})
@@ -72,22 +71,22 @@ fracpolarization(s::StokesParams{Complex{T}}) where {T} = polarization(s)*inv(s.
 
 Compute the complex fractional linear polarization of a Stokes Parameter `m`
 """
-mpol(m::StokesParams{T}) where {T<:Real} = (m.Q + 1im*m.U)/(m.I + eps(T))
+mpol(m::StokesParams) = (m.Q + 1im*m.U)/m.I
 
 """
     m̆(m::Union{StokesParameters{<:Complex}, CoherencyMatrix)
 
 Computes the complex fractional linear polarization of the complex or visibility quantities.
-Note that this function can also be called used [`mbreve`](@ref)
+Note that this function can also be called used [`mbreve`](@ref) or [`mpol`](@ref).
 """
-m̆(m::StokesParams{Complex{T}}) where {T} = (m.Q + 1im*m.U)/(m.I + eps(T))
+m̆(m::StokesParams) = mpol(m)
 
 
 """
     $(SIGNATURES)
 
 Computes the complex fractional linear polarization of the complex or visibility quantities.
-Note that this function can also be called used [`m̆`](@ref)
+Note that this function can also be called used [`m̆`](@ref) or [`mpol`](@ref).
 """
 mbreve(m::StokesParams) = m̆(m)
 
