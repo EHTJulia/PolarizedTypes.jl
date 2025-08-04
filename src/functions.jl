@@ -80,7 +80,7 @@ Computes the complex fractional linear polarization of the complex or visibility
 Note that this function can also be called used [`mbreve`](@ref) or [`mpol`](@ref).
 """
 m̆(m::StokesParams) = mpol(m)
-
+@deprecate m̆(m::StokesParams) mpol(m)
 
 """
     $(SIGNATURES)
