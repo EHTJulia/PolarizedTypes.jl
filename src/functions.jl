@@ -63,7 +63,7 @@ end
 
 Returns the (Q/I, U/I, V/I) fractional polarization vector as a 3-element static vector.
 """
-fracpolarization(s::StokesParams) = polarization(s)*inv(s.I)
+fracpolarization(s::StokesParams) = polarization(s) / s.I
 
 """
     mpol(m::StokesParameters{<:Real})
@@ -71,7 +71,7 @@ fracpolarization(s::StokesParams) = polarization(s)*inv(s.I)
 
 Compute the complex fractional linear polarization of a Stokes Parameter `m`
 """
-mpol(m::StokesParams) = (m.Q + 1im*m.U)/m.I
+mpol(m::StokesParams) = linearpol(m) / m.I
 
 """
     m̆(m::Union{StokesParameters{<:Complex}, CoherencyMatrix)

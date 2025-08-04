@@ -178,7 +178,7 @@ using Test
         @test complex(fp[1], fp[2]) ≈ linearpol(slin)/slin.I
         @test fp[end] ≈ 0
 
-        @test fracpolarization(StokesParams(1e-20, 1e-20, 1e-21, 1e-22)) ≈ [1, 0.1, 0.01]
+        @test fracpolarization(StokesParams(1f-5, 1f-5, 1f-6, 1f-7)) ≈ [1, 0.1, 0.01]
 
         @testset "ellipse" begin
             p = polellipse(s)
