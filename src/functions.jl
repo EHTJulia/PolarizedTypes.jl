@@ -88,7 +88,7 @@ m̆(m::StokesParams) = mpol(m)
 Computes the complex fractional linear polarization of the complex or visibility quantities.
 Note that this function can also be called used [`m̆`](@ref) or [`mpol`](@ref).
 """
-mbreve(m::StokesParams) = m̆(m)
+@deprecate mbreve(m::StokesParams) mpol(m)
 
 """
     evpa(m::Union{StokesParams, CoherencyMatrix})
