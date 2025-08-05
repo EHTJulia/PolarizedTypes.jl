@@ -1,6 +1,5 @@
 module PolarizedTypes
 
-using ChainRulesCore
 using DocStringExtensions
 using PrecompileTools
 using StaticArrays
@@ -16,7 +15,6 @@ export StokesParams, CoherencyMatrix, RPol, LPol, XPol, YPol,
 include("types.jl")
 include("basis_transforms.jl")
 include("functions.jl")
-include("utils.jl")
 
 @setup_workload begin
     @compile_workload begin
@@ -42,8 +40,6 @@ include("utils.jl")
         StokesParams(c232)
         StokesParams(c332)
         StokesParams(c432)
-
-
     end
 end
 
