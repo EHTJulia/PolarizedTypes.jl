@@ -63,8 +63,7 @@ end
 
 Returns the (Q/I, U/I, V/I) fractional polarization vector as a 3-element static vector.
 """
-fracpolarization(s::StokesParams{T}) where {T} = polarization(s)*inv(s.I + eps(T))
-fracpolarization(s::StokesParams{Complex{T}}) where {T} = polarization(s)*inv(s.I + eps(T))
+fracpolarization(s::StokesParams) = polarization(s) / s.I
 
 """
     mpol(m::StokesParameters{<:Real})
@@ -72,35 +71,17 @@ fracpolarization(s::StokesParams{Complex{T}}) where {T} = polarization(s)*inv(s.
 
 Compute the complex fractional linear polarization of a Stokes Parameter `m`
 """
-mpol(m::StokesParams{T}) where {T<:Real} = (m.Q + 1im*m.U)/(m.I + eps(T))
-
-"""
-    m̆(m::Union{StokesParameters{<:Complex}, CoherencyMatrix)
-
-Computes the complex fractional linear polarization of the complex or visibility quantities.
-Note that this function can also be called used [`mbreve`](@ref)
-"""
-m̆(m::StokesParams{Complex{T}}) where {T} = (m.Q + 1im*m.U)/(m.I + eps(T))
-
-
-"""
-    $(SIGNATURES)
-
-Computes the complex fractional linear polarization of the complex or visibility quantities.
-Note that this function can also be called used [`m̆`](@ref)
-"""
-mbreve(m::StokesParams) = m̆(m)
+mpol(m::StokesParams) = linearpol(m) / m.I
 
 """
     evpa(m::Union{StokesParams, CoherencyMatrix})
 Compute the evpa of a stokes vect or cohereny matrix.
 """
-evpa(m::StokesParams) = 1/2*atan(m.U, m.Q)
-evpa(m::StokesParams{<:Complex}) = 1/2*angle(m.U/m.Q)
+evpa(m::StokesParams) = angle(linearpol(m))/2
 
 
 # Now define the functions for Coherency matrix
-for f in (:linearpol, :polarization, :fracpolarization, :m̆, :mbreve, :evpa)
+for f in (:linearpol, :polarization, :fracpolarization, :mpol, :evpa)
     @eval begin
         $(f)(c::CoherencyMatrix) = $(f)(StokesParams(c))
     end

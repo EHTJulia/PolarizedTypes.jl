@@ -178,6 +178,8 @@ using Test
         @test complex(fp[1], fp[2]) ≈ linearpol(slin)/slin.I
         @test fp[end] ≈ 0
 
+        @test fracpolarization(StokesParams(1f-5, 1f-5, 1f-6, 1f-7)) ≈ [1, 0.1, 0.01]
+
         @testset "ellipse" begin
             p = polellipse(s)
             @test p.a*p.b ≈ s.V^2/4
@@ -198,14 +200,17 @@ using Test
             U = rand(ComplexF64) - 0.5
             V = rand(ComplexF64) - 0.5
             s = StokesParams(I, Q, U, V)
-            @test mbreve(s) == m̆(s)
             c = CoherencyMatrix{CirBasis, LinBasis}(s)
             @test linearpol(c) ≈ linearpol(s)
             @test polarization(c) ≈ polarization(s)
             @test fracpolarization(c) ≈ fracpolarization(s)
-            @test m̆(c) ≈ m̆(s)
-            @test mbreve(c) ≈ mbreve(s)
+            @test mpol(c) ≈ mpol(s)
             @test evpa(c) ≈ evpa(s)
+            
+            # test that EVPA gives consistent results for real and complex types
+            real_s = StokesParams(1.0, 1.0, 0.1, 0.01)
+            complex_s = StokesParams(complex(1.0), 1.0, 0.1, 0.01)
+            @test evpa(real_s) ≈ evpa(complex_s) atol=1e-10
         end
 
     end
