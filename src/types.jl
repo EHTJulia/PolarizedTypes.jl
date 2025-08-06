@@ -34,11 +34,8 @@ The vertical or Y electric feed basis, i.e. the vertical linear feed.
 struct YPol <: ElectricFieldBasis end
 
 
-abstract type StokesBasis end
-struct IPol end
-struct QPol end
-struct UPol end
-struct VPol end
+
+
 
 
 """
@@ -54,7 +51,7 @@ struct PolBasis{B1<:Union{ElectricFieldBasis, Missing}, B2<:Union{ElectricFieldB
     CirBasis <: PolBasis
 
 Measurement uses the circular polarization basis, which is typically used for circular
-feed interferometers.
+feed interferometers. The order is RPol, LPol.
 """
 const CirBasis = PolBasis{RPol,LPol}
 
@@ -62,9 +59,16 @@ const CirBasis = PolBasis{RPol,LPol}
     LinBasis <: PolBasis
 
 Measurement uses the linear polarization basis, which is typically used for linear
-feed interferometers.
+feed interferometers. Tge order is XPol, YPol.
 """
 const LinBasis = PolBasis{XPol,YPol}
+
+const UnionPolBasis = Union{CirBasis, PolBasis{LPol, RPol}, 
+                            LinBasis, PolBasis{YPol, XPol}}
+
+# Horrible hack to automatically promote vectors to use the UnionPolBasis type
+Base.promote_rule(::Type{P}, ::Type{P}) where {P<:PolBasis} = P
+Base.promote_rule(::Type{P1}, ::Type{P2}) where {P1 <: UnionPolBasis, P2 <: UnionPolBasis} = UnionPolBasis
 
 
 """

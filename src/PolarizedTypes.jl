@@ -9,7 +9,7 @@ using LinearAlgebra
 export StokesParams, CoherencyMatrix, RPol, LPol, XPol, YPol,
        PolBasis, CirBasis, LinBasis,
        basis_components, basis_transform, coherencymatrix, stokesparams,
-       linearpol, mbreve, m̆, evpa, polarization, fracpolarization, mpol,
+       linearpol, evpa, polarization, fracpolarization, mpol,
        polellipse
 
 include("types.jl")
@@ -30,7 +30,7 @@ include("functions.jl")
         StokesParams(c364)
         StokesParams(c464)
 
-        s32 = StokesParams(1f0 +0im, 5f-1+0im, 5f-1, 5f-1)
+        s32 = StokesParams(1f0 + 0f0im, 5f0 - 1f0 + 0im, 5f0 - 1f0, 5f0 - 1f0)
         c132 = CoherencyMatrix(s32, CirBasis(), CirBasis())
         c232 = CoherencyMatrix(s32, LinBasis(), LinBasis())
         c332 = CoherencyMatrix(s32, CirBasis(), LinBasis())
