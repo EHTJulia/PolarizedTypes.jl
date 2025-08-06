@@ -67,6 +67,7 @@ const UnionPolBasis = Union{CirBasis, PolBasis{LPol, RPol},
                             LinBasis, PolBasis{YPol, XPol}}
 
 # Horrible hack to automatically promote vectors to use the UnionPolBasis type
+# if applicable.
 Base.promote_rule(::Type{P}, ::Type{P}) where {P<:PolBasis} = P
 Base.promote_rule(::Type{P1}, ::Type{P2}) where {P1 <: UnionPolBasis, P2 <: UnionPolBasis} = UnionPolBasis
 
