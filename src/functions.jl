@@ -73,6 +73,11 @@ Compute the complex fractional linear polarization of a Stokes Parameter `m`
 """
 mpol(m::StokesParams) = linearpol(m) / m.I
 
+m̆(m) = mpol(m)
+mbreve(m) = mpol(m)
+
+
+
 """
     evpa(m::Union{StokesParams, CoherencyMatrix})
 Compute the evpa of a stokes vect or cohereny matrix.

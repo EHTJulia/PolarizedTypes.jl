@@ -1,39 +1,18 @@
-"""
-    $(TYPEDEF)
 
-An abstract type whose subtypes denote a specific electric field basis.
-"""
-abstract type ElectricFieldBasis end
+using EnumX
 
-"""
-    $(TYPEDEF)
+@enumx Efield begin
+    "Right Circular Polarization" 
+    R
+    "Left Circular Polarization"
+    L
+    "Horizontal Linear Polarization"
+    X
+    "Vertical Linear Polarization"
+    Y
+end
 
-The right circular electric field basis, i.e. a right-handed circular feed.
-"""
-struct RPol <: ElectricFieldBasis end
-
-"""
-    $(TYPEDEF)
-
-The left circular electric field basis, i.e. a left-handed circular feed.
-"""
-struct LPol <: ElectricFieldBasis end
-
-"""
-    $(TYPEDEF)
-
-The horizontal or X electric feed basis, i.e. the horizontal linear feed.
-"""
-struct XPol <: ElectricFieldBasis end
-
-"""
-    $(TYPEDEF)
-
-The vertical or Y electric feed basis, i.e. the vertical linear feed.
-"""
-struct YPol <: ElectricFieldBasis end
-
-
+export Efield
 
 
 
@@ -44,7 +23,10 @@ struct YPol <: ElectricFieldBasis end
 Denotes a general polarization basis, with basis vectors (B1,B2) which are typically
 `<: Union{ElectricFieldBasis, Missing}`
 """
-struct PolBasis{B1<:Union{ElectricFieldBasis, Missing}, B2<:Union{ElectricFieldBasis, Missing}} end
+struct PolBasis{P<:Efield.T} 
+    p1::P
+    p2::P
+end
 
 
 """
@@ -53,22 +35,9 @@ struct PolBasis{B1<:Union{ElectricFieldBasis, Missing}, B2<:Union{ElectricFieldB
 Measurement uses the circular polarization basis, which is typically used for circular
 feed interferometers. The order is RPol, LPol.
 """
-const CirBasis = PolBasis{RPol,LPol}
+const CirBasis = PolBasis(Efield.R, Efield.L)
 
-"""
-    LinBasis <: PolBasis
-
-Measurement uses the linear polarization basis, which is typically used for linear
-feed interferometers. Tge order is XPol, YPol.
-"""
-const LinBasis = PolBasis{XPol,YPol}
-
-const UnionPolBasis = Union{CirBasis, PolBasis{LPol, RPol}, 
-                            LinBasis, PolBasis{YPol, XPol}}
-
-# Horrible hack to automatically promote vectors to use the UnionPolBasis type
-Base.promote_rule(::Type{P}, ::Type{P}) where {P<:PolBasis} = P
-Base.promote_rule(::Type{P1}, ::Type{P2}) where {P1 <: UnionPolBasis, P2 <: UnionPolBasis} = UnionPolBasis
+const LinBasis = PolBasis(Efield.X, Efield.Y)
 
 
 """
@@ -145,14 +114,15 @@ c = CoherencyMatrix(XR, YR, XL, YL, LinBasis(), CirBasis())
 ```
 
 """
-struct CoherencyMatrix{B1,B2,T} <: StaticArraysCore.FieldMatrix{2,2,T}
+struct CoherencyMatrix{T, B<:NTuple{2, <:PolBasis}} <: StaticArraysCore.FieldMatrix{2,2,T}
     e11::T
     e21::T
     e12::T
     e22::T
+    basis::B
 end
 
-StaticArraysCore.similar_type(::Type{CoherencyMatrix{B1,B2}}, ::Type{T}, s::Size{(2,2)}) where {B1,B2,T} = CoherencyMatrix{B1,B2,T}
+StaticArraysCore.similar_type(::Type{CoherencyMatrix{T, B}}, ::Type{T2}, s::Size{(2,2)}) where {T, T2, B} = CoherencyMatrix{T2, B}
 
 
 """
@@ -172,9 +142,9 @@ elements correspond to
     RX* RY*
     LX* LY*
 """
-@inline function CoherencyMatrix(e11::Number, e21::Number, e12::Number, e22::Number, basis::NTuple{2,PolBasis})
+@inline function CoherencyMatrix(e11::Number, e21::Number, e12::Number, e22::Number, basis::NTuple{2,<:PolBasis})
     T = promote_type(typeof(e11), typeof(e12), typeof(e21), typeof(e22))
-    return CoherencyMatrix{typeof(basis[1]), typeof(basis[2]),T}(T(e11), T(e21), T(e12), T(e22))
+    return CoherencyMatrix{T, typeof(basis)}(T(e11), T(e21), T(e12), T(e22), basis)
 end
 
 """
@@ -267,7 +237,7 @@ we use the circular basis as our reference. Note that this is only important for
 e.g., if `basis1` and `basis2` are different. If `basis1==basis2` then the reference basis
 is never used.
 """
-@inline function CoherencyMatrix(s::StokesParams, b1::PolBasis, b2::PolBasis, refbasis::Union{LinBasis, CirBasis}=CirBasis())
+@inline function CoherencyMatrix(s::StokesParams, b1::PolBasis, b2::PolBasis, refbasis=CirBasis)
     t1 = basis_transform(refbasis=>b1)
     # Flip because these are the dual elements
     t2 = basis_transform(b2=>refbasis)
@@ -276,51 +246,46 @@ is never used.
     return CoherencyMatrix(t1*c_cir*t2, b1, b2)
 end
 
-function CoherencyMatrix(s::StokesParams, b1::T, b2::T, refbasis=CirBasis()) where {T<:PolBasis}
-    return CoherencyMatrix(s, b1)
-end
-
 @inline function CoherencyMatrix(s::StokesParams, b::PolBasis)
-    return CoherencyMatrix{typeof(b), typeof(b)}(s)
-end
-
-@inline function CoherencyMatrix{CirBasis,CirBasis}(s::StokesParams)
-    (;I,Q,U,V) = s
-    RR = complex((I + V))
-    LR = (Q - 1im*U)
-    RL = (Q + 1im*U)
-    LL = complex((I - V))
-    return CoherencyMatrix(RR, LR, RL, LL, CirBasis(), CirBasis())
-end
-
-@inline function CoherencyMatrix{B1, B2}(s::StokesParams) where {B1, B2}
-    return CoherencyMatrix(s, B1(), B2())
-end
-
-
-@inline function CoherencyMatrix{LinBasis, LinBasis}(s::StokesParams)
-    (;I,Q,U,V) = s
-    XX = (I + Q)
-    YX = (U - 1im*V)
-    XY = (U + 1im*V)
-    YY = (I - Q)
-    return CoherencyMatrix(XX, YX, XY, YY, LinBasis(), LinBasis())
+    if b == CirBasis || b == PolBasis(Efield.L, Efield.R)
+        (;I,Q,U,V) = s
+        RR = complex((I + V))
+        LR = (Q - 1im*U)
+        RL = (Q + 1im*U)
+        LL = complex((I - V))
+        b == CirBasis && return CoherencyMatrix(RR, LR, RL, LL, (b,b))
+        return CoherencyMatrix(LL, RL, LR, RR, (b,b))
+    elseif b == LinBasis || b == PolBasis(YPol, XPol)
+        (;I,Q,U,V) = s
+        XX = complex((I + Q))
+        YX = (U - 1im*V)
+        XY = (U + 1im*V)
+        YY = complex((I - Q))
+        b == CirBasis && return CoherencyMatrix(XX, YX, XY, YY, (b,b))
+        return CoherencyMatrix(YY, XY, YX, XX, (b,b))
+    else
+        throw(ArgumentError("Unsupported basis $b"))
+    end
 end
 
 
-
-@inline function StokesParams(c::CoherencyMatrix{CirBasis, CirBasis})
-    I = (c.e11 + c.e22)/2
-    Q = (c.e21 + c.e12)/2
-    U = 1im*(c.e21 - c.e12)/2
-    V = (c.e11 - c.e22)/2
-    return StokesParams(I, Q, U, V)
+@inline function StokesParams(c::CoherencyMatrix)
+    if c.basis[1] == c.basis[2] == CirBasis
+        I = (c.e11 + c.e22)/2
+        Q = (c.e21 + c.e12)/2
+        U = 1im*(c.e21 - c.e12)/2
+        V = (c.e11 - c.e22)/2
+        return StokesParams(I, Q, U, V)
+    else
+        return _stokesparams(c)
+    end
 end
 
-@inline function StokesParams(c::CoherencyMatrix{B1, B2}) where {B1, B2}
-    t1 = basis_transform(B1()=>CirBasis())
+@inline function _stokesparams(c::CoherencyMatrix)
+    b = c.basis
+    t1 = basis_transform(b[1]=>CirBasis)
     # Flip because these are the dual elements
-    t2 = basis_transform(CirBasis()=>B2())
-    c_cir = CoherencyMatrix(t1*c*t2, CirBasis())
+    t2 = basis_transform(CirBasis=>b[2])
+    c_cir = CoherencyMatrix(t1*c*t2, CirBasis)
     return StokesParams(c_cir)
 end

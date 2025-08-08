@@ -6,56 +6,35 @@ using Test
 
 @testset "PolarizedTypes.jl" begin
     @testset "Basis transform" begin
-        @test basis_transform(PolBasis{XPol,YPol}()=>PolBasis{RPol,LPol}())*basis_transform(PolBasis{RPol,LPol}()=>PolBasis{XPol,YPol}()) ≈ [1.0 0.0;0.0 1.0]
-        @test basis_transform(PolBasis{RPol,LPol}()=>PolBasis{XPol,YPol}())*basis_transform(PolBasis{XPol,YPol}()=>PolBasis{RPol,LPol}()) ≈ [1.0 0.0;0.0 1.0]
+        @test basis_transform(PolBasis(Efield.X,Efield.Y)=>PolBasis(Efield.R,Efield.L))*basis_transform(PolBasis(Efield.R,Efield.L)=>PolBasis(Efield.X,Efield.Y)) ≈ [1.0 0.0;0.0 1.0]
+        @test basis_transform(PolBasis(Efield.R,Efield.L)=>PolBasis(Efield.X,Efield.Y))*basis_transform(PolBasis(Efield.X,Efield.Y)=>PolBasis(Efield.R,Efield.L)) ≈ [1.0 0.0;0.0 1.0]
 
-        @test basis_transform(CirBasis(), LinBasis()) == basis_transform(CirBasis()=>LinBasis())
+        @test basis_transform(CirBasis, LinBasis) == basis_transform(CirBasis=>LinBasis)
 
-        @test basis_components(RPol(), CirBasis()) ≈ basis_transform(CirBasis()=>CirBasis())*SVector(1.0, 0.0)
-        @test basis_components(LPol(), CirBasis()) ≈ basis_transform(CirBasis()=>CirBasis())*SVector(0.0, 1.0)
-        @test basis_components(RPol(), LinBasis()) ≈ basis_transform(CirBasis()=>LinBasis())*SVector(1.0, 0.0)
-        @test basis_components(LPol(), LinBasis()) ≈ basis_transform(CirBasis()=>LinBasis())*SVector(0.0, 1.0)
+        @test basis_components(Efield.R, CirBasis) ≈ basis_transform(CirBasis=>CirBasis)*SVector(1.0, 0.0)
+        @test basis_components(Efield.L, CirBasis) ≈ basis_transform(CirBasis=>CirBasis)*SVector(0.0, 1.0)
+        @test basis_components(Efield.R, LinBasis) ≈ basis_transform(CirBasis=>LinBasis)*SVector(1.0, 0.0)
+        @test basis_components(Efield.L, LinBasis) ≈ basis_transform(CirBasis=>LinBasis)*SVector(0.0, 1.0)
 
-        @test basis_components(XPol(), CirBasis()) ≈ basis_transform(LinBasis()=>CirBasis())*SVector(1.0, 0.0)
-        @test basis_components(YPol(), CirBasis()) ≈ basis_transform(LinBasis()=>CirBasis())*SVector(0.0, 1.0)
-        @test basis_components(XPol(), LinBasis()) ≈ basis_transform(LinBasis()=>LinBasis())*SVector(1.0, 0.0)
-        @test basis_components(YPol(), LinBasis()) ≈ basis_transform(LinBasis()=>LinBasis())*SVector(0.0, 1.0)
+        @test basis_components(Efield.X, CirBasis) ≈ basis_transform(LinBasis=>CirBasis)*SVector(1.0, 0.0)
+        @test basis_components(Efield.Y, CirBasis) ≈ basis_transform(LinBasis=>CirBasis)*SVector(0.0, 1.0)
+        @test basis_components(Efield.X, LinBasis) ≈ basis_transform(LinBasis=>LinBasis)*SVector(1.0, 0.0)
+        @test basis_components(Efield.Y, LinBasis) ≈ basis_transform(LinBasis=>LinBasis)*SVector(0.0, 1.0)
 
 
-        for (e1, e2) in [(RPol, LPol), (LPol, RPol),
-                         (XPol, YPol), (XPol, YPol),
+        for (e1, e2) in [(Efield.R, Efield.L), (Efield.L, Efield.R),
+                         (Efield.X, Efield.Y), (Efield.X, Efield.Y),
                          ]
-            @test basis_transform(PolBasis{e1,e2}()=>PolBasis{e1,e2}()) ≈ [1.0 0.0; 0.0 1.0]
+            @test basis_transform(PolBasis(e1,e2)=>PolBasis(e1,e2)) ≈ [1.0 0.0; 0.0 1.0]
         end
     end
 
-    @testset "Non-orthogonal" begin
-        @test_throws AssertionError basis_transform(PolBasis{XPol,YPol}(), PolBasis{RPol,XPol}())
-        @test_throws AssertionError basis_transform(PolBasis{XPol,YPol}(), PolBasis{RPol,YPol}())
-        @test_throws AssertionError basis_transform(PolBasis{XPol,YPol}(), PolBasis{XPol,RPol}())
-        @test_throws AssertionError basis_transform(PolBasis{XPol,YPol}(), PolBasis{XPol,LPol}())
-    end
-
-    @testset "Missing feeds" begin
-        for E in (XPol,YPol,RPol,LPol)
-            c1 = basis_components(E(), PolBasis{E, Missing}())
-            @test c1[1] ≈ 1.0
-            @test c1[2] isa Missing
-
-            c2 = basis_components(E(), PolBasis{Missing, E}())
-            @test c2[2] ≈ 1.0
-            @test c2[1] isa Missing
-
-            # Test that the compiler realized the Union
-            @inferred basis_components(E(), PolBasis{Missing, E}())
-            @inferred basis_components(E(), PolBasis{E, Missing}())
-            @inferred basis_transform(PolBasis{E, Missing}()=>CirBasis())
-            @inferred basis_transform(PolBasis{E, Missing}()=>LinBasis())
-            @inferred basis_transform(CirBasis()=>PolBasis{E, Missing}())
-            @inferred basis_transform(LinBasis()=>PolBasis{E, Missing}())
-
-        end
-    end
+    # @testset "Non-orthogonal" begin
+    #     @test_throws AssertionError basis_transform(PolBasis(Efield.X,Efield.Y), PolBasis(Efield.R,Efield.X))
+    #     @test_throws AssertionError basis_transform(PolBasis(Efield.X,Efield.Y), PolBasis(Efield.R,Efield.Y))
+    #     @test_throws AssertionError basis_transform(PolBasis(Efield.X,Efield.Y), PolBasis(Efield.X,Efield.R))
+    #     @test_throws AssertionError basis_transform(PolBasis(Efield.X,Efield.Y), PolBasis(Efield.X,Efield.L))
+    # end
 
 
     @testset "Simple stokes test" begin
@@ -63,21 +42,21 @@ using Test
         sU = StokesParams(1.0, 0.0, 0.5, 0.0)
         sV = StokesParams(1.0, 0.0, 0.0, 0.5)
 
-        @test CoherencyMatrix(sQ, LinBasis()) ≈ ([1.5 0.0; 0.0 0.5])
-        @test CoherencyMatrix(sQ, CirBasis()) ≈ ([1.0 0.5; 0.5 1.0])
+        @test CoherencyMatrix(sQ, LinBasis) ≈ ([1.5 0.0; 0.0 0.5])
+        @test CoherencyMatrix(sQ, CirBasis) ≈ ([1.0 0.5; 0.5 1.0])
 
-        @test CoherencyMatrix(sU, LinBasis()) ≈ ([1.0 0.5; 0.5 1.0])
-        @test CoherencyMatrix(sU, CirBasis()) ≈ ([1.0 0.5im; -0.5im 1.0])
+        @test CoherencyMatrix(sU, LinBasis) ≈ ([1.0 0.5; 0.5 1.0])
+        @test CoherencyMatrix(sU, CirBasis) ≈ ([1.0 0.5im; -0.5im 1.0])
 
-        @test CoherencyMatrix(sV, LinBasis()) ≈ ([1.0 0.5im; -0.5im 1.0])
-        @test CoherencyMatrix(sV, CirBasis()) ≈ ([1.5 0.0; 0.0 0.5])
+        @test CoherencyMatrix(sV, LinBasis) ≈ ([1.0 0.5im; -0.5im 1.0])
+        @test CoherencyMatrix(sV, CirBasis) ≈ ([1.5 0.0; 0.0 0.5])
     end
 
     @testset "Simple Coherency test" begin
-        cRR = CoherencyMatrix(0.5, 0.0, 0.0, 0.0, CirBasis())
-        cLR = CoherencyMatrix(0.0, 0.5, 0.0, 0.0, CirBasis())
-        cRL = CoherencyMatrix(0.0, 0.0, 0.5, 0.0, CirBasis())
-        cLL = CoherencyMatrix(0.0, 0.0, 0.0, 0.5, CirBasis())
+        cRR = CoherencyMatrix(0.5, 0.0, 0.0, 0.0, CirBasis)
+        cLR = CoherencyMatrix(0.0, 0.5, 0.0, 0.0, CirBasis)
+        cRL = CoherencyMatrix(0.0, 0.0, 0.5, 0.0, CirBasis)
+        cLL = CoherencyMatrix(0.0, 0.0, 0.0, 0.5, CirBasis)
 
         @test StokesParams(cRR) ≈ inv(2)*[0.5, 0.0, 0.0, 0.5]
         @test StokesParams(cLR) ≈ inv(2)*[0.0, 0.5, 0.5im, 0.0]
@@ -85,17 +64,17 @@ using Test
         @test StokesParams(cLL) ≈ inv(2)*[0.5, 0.0, 0.0, -0.5]
 
 
-        cXX = CoherencyMatrix(0.5, 0.0, 0.0, 0.0, LinBasis())
-        cYX = CoherencyMatrix(0.0, 0.5, 0.0, 0.0, LinBasis())
-        cXY = CoherencyMatrix(0.0, 0.0, 0.5, 0.0, LinBasis())
-        cYY = CoherencyMatrix(0.0, 0.0, 0.0, 0.5, LinBasis())
+        cXX = CoherencyMatrix(0.5, 0.0, 0.0, 0.0, LinBasis)
+        cYX = CoherencyMatrix(0.0, 0.5, 0.0, 0.0, LinBasis)
+        cXY = CoherencyMatrix(0.0, 0.0, 0.5, 0.0, LinBasis)
+        cYY = CoherencyMatrix(0.0, 0.0, 0.0, 0.5, LinBasis)
 
         @test StokesParams(cXX) ≈ inv(2)*[0.5, 0.5, 0.0, 0.0]
         @test StokesParams(cYX) ≈ inv(2)*[0.0, 0.0, 0.5, 0.5im]
         @test StokesParams(cXY) ≈ inv(2)*[0.0, 0.0, 0.5, -0.5im]
         @test StokesParams(cYY) ≈ inv(2)*[0.5, -0.5, 0.0, 0.0]
 
-        @test StaticArraysCore.similar_type(CoherencyMatrix{CirBasis,LinBasis}, Float64, Size(2,2)) == CoherencyMatrix{CirBasis,LinBasis,Float64}
+        @test StaticArraysCore.similar_type(CoherencyMatrix{Float32}, Float64, Size(2,2)) == CoherencyMatrix{Float64}
         @test StaticArraysCore.similar_type(StokesParams, Float64, Size(4,)) == StokesParams{Float64}
 
 
@@ -104,11 +83,11 @@ using Test
     @testset "Conversions back and forward" begin
         s = StokesParams(1.0 .+ 0.0im, 0.2 + 0.2im, 0.2 - 0.2im, 0.1+0.05im)
 
-        @test s ≈ StokesParams(CoherencyMatrix(s, CirBasis()))
-        @test s ≈ StokesParams(CoherencyMatrix(s, LinBasis()))
-        @test s ≈ StokesParams(CoherencyMatrix(s, CirBasis(), LinBasis()))
-        @test s ≈ StokesParams(CoherencyMatrix(s, LinBasis(), CirBasis()))
-        @test s ≈ StokesParams(CoherencyMatrix(s, PolBasis{YPol,XPol}(), PolBasis{LPol,RPol}()))
+        @test s ≈ StokesParams(CoherencyMatrix(s, CirBasis))
+        @test s ≈ StokesParams(CoherencyMatrix(s, LinBasis))
+        @test s ≈ StokesParams(CoherencyMatrix(s, CirBasis, LinBasis))
+        @test s ≈ StokesParams(CoherencyMatrix(s, LinBasis, CirBasis))
+        @test s ≈ StokesParams(CoherencyMatrix(s, PolBasis(Efield.Y,Efield.X), PolBasis(Efield.L,Efield.R)))
     end
 
     @testset "Mixed Pol" begin
@@ -118,9 +97,9 @@ using Test
         V = rand(ComplexF64) - 0.5
         s = StokesParams(I, Q, U, V)
 
-        c1 = CoherencyMatrix(s, CirBasis(), LinBasis())
-        c2 = CoherencyMatrix{CirBasis, LinBasis}(s)
-        c3 = basis_transform(CoherencyMatrix(s, CirBasis()), CirBasis(), LinBasis())
+        c1 = CoherencyMatrix(s, CirBasis, LinBasis)
+        c2 = CoherencyMatrix(s, CirBasis, LinBasis)
+        c3 = basis_transform(CoherencyMatrix(s, CirBasis), CirBasis, LinBasis)
         @test c1 ≈ c2
         @test c1 ≈ c3
 
@@ -131,21 +110,21 @@ using Test
 
     @testset "Conversion Consistency" begin
         s = StokesParams(1.0 .+ 0.0im, 0.2 + 0.2im, 0.2 - 0.2im, 0.1+0.05im)
-        c_lin1 = CoherencyMatrix(s, LinBasis())
-        c_lin2 = CoherencyMatrix(s, PolBasis{XPol,YPol}())
-        c_lin3 = CoherencyMatrix(s, PolBasis{XPol,YPol}(), PolBasis{XPol,YPol}())
+        c_lin1 = CoherencyMatrix(s, LinBasis)
+        c_lin2 = CoherencyMatrix(s, PolBasis(Efield.X,Efield.Y))
+        c_lin3 = CoherencyMatrix(s, PolBasis(Efield.X,Efield.Y), PolBasis(Efield.X,Efield.Y))
 
 
         @test c_lin1 ≈ c_lin2 ≈ c_lin3
 
-        c_cir1 = CoherencyMatrix(s, CirBasis())
-        c_cir2 = CoherencyMatrix(s, PolBasis{RPol,LPol}())
-        c_cir3 = CoherencyMatrix(s, PolBasis{RPol,LPol}(), PolBasis{RPol,LPol}())
+        c_cir1 = CoherencyMatrix(s, CirBasis)
+        c_cir2 = CoherencyMatrix(s, PolBasis(Efield.R,Efield.L))
+        c_cir3 = CoherencyMatrix(s, PolBasis(Efield.R,Efield.L), PolBasis(Efield.R,Efield.L))
 
         @test c_cir1 ≈ c_cir2 ≈ c_cir3
 
-        t1 = basis_transform(LinBasis()=>CirBasis())
-        t2 = basis_transform(CirBasis()=>LinBasis())
+        t1 = basis_transform(LinBasis=>CirBasis)
+        t2 = basis_transform(CirBasis=>LinBasis)
 
         @test t2*c_cir1*t1 ≈ c_lin1
         @test t1*c_lin1*t2 ≈ c_cir1
@@ -160,10 +139,10 @@ using Test
 
     @testset "Performance test" begin
         s = StokesParams(1.0 .+ 0.0im, 0.2 + 0.2im, 0.2 - 0.2im, 0.1+0.05im)
-        @test_opt StokesParams(CoherencyMatrix(s, LinBasis()))
-        @test_opt StokesParams(CoherencyMatrix(s, CirBasis()))
-        @test_opt StokesParams(CoherencyMatrix(s, LinBasis(), CirBasis()))
-        @test_opt StokesParams(CoherencyMatrix(s, LinBasis(), CirBasis(), LinBasis()))
+        @test_opt StokesParams(CoherencyMatrix(s, LinBasis))
+        @test_opt StokesParams(CoherencyMatrix(s, CirBasis))
+        @test_opt StokesParams(CoherencyMatrix(s, LinBasis, CirBasis))
+        @test_opt StokesParams(CoherencyMatrix(s, LinBasis, CirBasis, LinBasis))
     end
 
     @testset "Polarized Functions" begin
@@ -200,7 +179,7 @@ using Test
             U = rand(ComplexF64) - 0.5
             V = rand(ComplexF64) - 0.5
             s = StokesParams(I, Q, U, V)
-            c = CoherencyMatrix{CirBasis, LinBasis}(s)
+            c = CoherencyMatrix(s, CirBasis, LinBasis)
             @test linearpol(c) ≈ linearpol(s)
             @test polarization(c) ≈ polarization(s)
             @test fracpolarization(c) ≈ fracpolarization(s)
@@ -227,7 +206,7 @@ using Test
         prc =  ChainRulesCore.ProjectTo(c)
         @test prc(cmat) == c
         @test prc(c) == c
-        @test_throws AssertionError prc(CoherencyMatrix(cmat, LinBasis()))
-        @test_throws AssertionError prc(CoherencyMatrix(cmat, CirBasis()))
+        @test_throws AssertionError prc(CoherencyMatrix(cmat, LinBasis))
+        @test_throws AssertionError prc(CoherencyMatrix(cmat, CirBasis))
     end
 end

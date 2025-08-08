@@ -36,29 +36,55 @@ where base element of the output is T.
 function innerprod end
 
 # Define that XPol,YPol and RPol,LPol are orthonormal bases
-@inline innerprod(::Type{T}, ::B, ::B) where {T, B<:ElectricFieldBasis} = one(T)
-@inline innerprod(::Type{T}, ::RPol, ::LPol) where {T} = complex(zero(T))
-@inline innerprod(::Type{T}, ::LPol, ::RPol) where {T} = complex(zero(T))
-@inline innerprod(::Type{T}, ::XPol, ::YPol) where {T} = complex(zero(T))
-@inline innerprod(::Type{T}, ::YPol, ::XPol) where {T} = complex(zero(T))
 
-# Now define the projections of linear onto circular
-@inline innerprod(::Type{T}, ::XPol, ::RPol) where {T} = complex(inv(sqrt(T(2))), zero(T))
-@inline innerprod(::Type{T}, ::XPol, ::LPol) where {T} = complex(inv(sqrt(T(2))), zero(T))
+function innerprod(::Type{F}, b1::Efield.T, b2::Efield.T) where {F}
+    b1 == b2 && return one(F)
+    
+    if b1 == Efield.X && b2 == Efield.R
+        return complex(inv(sqrt(F(2))), zero(F))
+    elseif b1 == Efield.X && b2 == Efield.L
+        return complex(inv(sqrt(F(2))), zero(F))
+    elseif b1 == Efield.Y && b2 == Efield.R
+        return complex(zero(F), -inv(sqrt(F(2))))
+    elseif b1 == Efield.Y && b2 == Efield.L
+        return complex(zero(F), inv(sqrt(F(2))))
+    elseif b1 == Efield.R && b2 == Efield.X
+        return complex(inv(sqrt(F(2))), zero(F))
+    elseif b1 == Efield.R && b2 == Efield.Y
+        return complex(zero(F), inv(sqrt(F(2))))
+    elseif b1 == Efield.L && b2 == Efield.X
+        return complex(inv(sqrt(F(2))), zero(F))
+    elseif b1 == Efield.L && b2 == Efield.Y
+        return complex(zero(F), -inv(sqrt(F(2))))
+    end
 
-@inline innerprod(::Type{T}, ::YPol, ::RPol) where {T} = complex(zero(T), -inv(sqrt(T(2))))
-@inline innerprod(::Type{T}, ::YPol, ::LPol) where {T} = complex(zero(T), inv(sqrt(T(2))))
 
-# use the conjugate symmetry of the inner product to define projections of circular onto linear.
-@inline innerprod(::Type{T}, c::Union{RPol,LPol}, l::Union{XPol,YPol}) where {T} = conj(innerprod(T, l, c))
+    return complex(zero(F))
+end
 
-# Now handle missing basis vectors (important when you are missing a feed)
-@inline innerprod(::Type{T}, c::Missing, l::ElectricFieldBasis) where {T} = missing
-@inline innerprod(::Type{T}, l::ElectricFieldBasis, c::Missing) where {T} = missing
+# @inline innerprod(::Type{T}, ::B, ::B) where {T, B<:ElectricFieldBasis} = one(T)
+# @inline innerprod(::Type{T}, ::RPol, ::LPol) where {T} = complex(zero(T))
+# @inline innerprod(::Type{T}, ::LPol, ::RPol) where {T} = complex(zero(T))
+# @inline innerprod(::Type{T}, ::XPol, ::YPol) where {T} = complex(zero(T))
+# @inline innerprod(::Type{T}, ::YPol, ::XPol) where {T} = complex(zero(T))
+
+# # Now define the projections of linear onto circular
+# @inline innerprod(::Type{T}, ::XPol, ::RPol) where {T} = complex(inv(sqrt(T(2))), zero(T))
+# @inline innerprod(::Type{T}, ::XPol, ::LPol) where {T} = complex(inv(sqrt(T(2))), zero(T))
+
+# @inline innerprod(::Type{T}, ::YPol, ::RPol) where {T} = complex(zero(T), -inv(sqrt(T(2))))
+# @inline innerprod(::Type{T}, ::YPol, ::LPol) where {T} = complex(zero(T), inv(sqrt(T(2))))
+
+# # use the conjugate symmetry of the inner product to define projections of circular onto linear.
+# @inline innerprod(::Type{T}, c::Union{RPol,LPol}, l::Union{XPol,YPol}) where {T} = conj(innerprod(T, l, c))
+
+# # Now handle missing basis vectors (important when you are missing a feed)
+# @inline innerprod(::Type{T}, c::Missing, l::ElectricFieldBasis) where {T} = missing
+# @inline innerprod(::Type{T}, l::ElectricFieldBasis, c::Missing) where {T} = missing
 
 # Now give me the components of electic fields in both linear and circular bases.
-@inline basis_components(::Type{T}, b1::Union{ElectricFieldBasis,Missing}, ::PolBasis{B1,B2}) where {T, B1,B2} = SVector{2}(innerprod(T, B1(), b1), innerprod(T, B2(), b1))
-@inline basis_components(v::Union{ElectricFieldBasis, Missing}, b::PolBasis) = basis_components(Float64, v, b)
+@inline basis_components(::Type{T}, b1::Efield.T, b::PolBasis) where {T} = SVector{2}(innerprod(T, b.p1, b1), innerprod(T, b.p2, b1))
+@inline basis_components(v::Efield.T, b::PolBasis) = basis_components(Float64, v, b)
 
 #This handles non-orthogonal bases
 # @inline basis_components(::Type{T}, b1::B1, ::PolBasis{B1, B2}) where {T, B1<:ElectricFieldBasis, B2<:ElectricFieldBasis} = SVector{2}(complex(one(T)), complex(zero(T)))
@@ -66,11 +92,11 @@ function innerprod end
 # @inline basis_components(::Type{T}, b1::B1, ::PolBasis{B1, B1}) where {T, B1<:ElectricFieldBasis} = SVector{2}(complex(one(T)), complex(one(T)))
 
 
-for (E1, E2) in [(:XPol,:RPol), (:RPol, :XPol), (:RPol,:YPol), (:YPol,:RPol), (:XPol,:LPol), (:LPol,:XPol), (:YPol,:LPol), (:LPol,:YPol)]
-    @eval begin
-        PolBasis{$E1,$E2}() = throw(AssertionError("Non-orthogonal bases not implemented"))
-    end
-end
+# for (E1, E2) in [(:XPol,:RPol), (:RPol, :XPol), (:RPol,:YPol), (:YPol,:RPol), (:XPol,:LPol), (:LPol,:XPol), (:YPol,:LPol), (:LPol,:YPol)]
+#     @eval begin
+#         PolBasis{$E1,$E2}() = throw(AssertionError("Non-orthogonal bases not implemented"))
+#     end
+# end
 
 """
     basis_transform([T=Float64,], b1::PolBasis, b2::PolBasis)
@@ -91,15 +117,15 @@ julia> basis_transform(CirBasis()=>LinBasis())
 """
 function basis_transform end
 
-@inline basis_transform(::Type{T}, b1::PolBasis{E1,E2}, b2::PolBasis) where {E1,E2,T} = hcat(basis_components(T, E1(), b2), basis_components(T, E2(), b2))
+@inline basis_transform(::Type{T}, b1::PolBasis, b2::PolBasis) where {T} = hcat(basis_components(T, b1.p1, b2), basis_components(T, b1.p2, b2))
 # @inline basis_transform(::Type{T}, b1::B, b2::B) where {T, B<:PolBasis} = SMatrix{2,2,Complex{T}}(1.0, 0.0, 0.0, 1.0)
 @inline basis_transform(b1::PolBasis, b2::PolBasis) = basis_transform(Float64, b1, b2)
 
-@inline basis_transform(::Type{T}, p::Pair{B1,B2}) where {T, B1<:PolBasis, B2<:PolBasis} = basis_transform(T, B1(), B2())
-@inline basis_transform(::Pair{B1,B2}) where {B1<:PolBasis, B2<:PolBasis} = basis_transform(Float64, B1(), B2())
+@inline basis_transform(::Type{T}, p::Pair{B1,B2}) where {T, B1<:PolBasis, B2<:PolBasis} = basis_transform(T, first(p), last(p))
+@inline basis_transform(p::Pair{B1,B2}) where {B1<:PolBasis, B2<:PolBasis} = basis_transform(Float64, first(p), last(p))
 
-@inline function basis_transform(c::CoherencyMatrix{B1, B2, Complex{T}}, e1::PolBasis, e2::PolBasis) where {B1, B2, T}
-    t1 = basis_transform(T, B1()=>e1)
-    t2 = basis_transform(T, e2=>B2())
+@inline function basis_transform(c::CoherencyMatrix{Complex{T}}, e1::PolBasis, e2::PolBasis) where {T}
+    t1 = basis_transform(T, c.basis[1]=>e1)
+    t2 = basis_transform(T, e2=>c.basis[2])
     return CoherencyMatrix(t1*c*t2, e1, e2)
 end

@@ -1,7 +1,7 @@
 name = "PolarizedTypes"
 uuid = "d3c5d4cd-a8ee-40d6-aac7-e34df5a20044"
 authors = ["Paul Tiede <ptiede91@gmail.com> and contributors"]
-version = "0.2.0-DEV"
+version = "0.1.10"
 
 [deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
