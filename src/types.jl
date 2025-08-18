@@ -41,10 +41,10 @@ struct YPol <: ElectricFieldBasis end
 """
     $(TYPEDEF)
 
-Denotes a general polarization basis, with basis vectors (B1,B2) which are typically
-`<: Union{ElectricFieldBasis, Missing}`
+Denotes a general polarization basis, with basis vectors (B1,B2) which must be
+`<: ElectricFieldBasis`
 """
-struct PolBasis{B1<:Union{ElectricFieldBasis, Missing}, B2<:Union{ElectricFieldBasis, Missing}} end
+struct PolBasis{B1<:ElectricFieldBasis, B2<:ElectricFieldBasis} end
 
 
 """
