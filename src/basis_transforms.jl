@@ -7,18 +7,18 @@ static vector.
 
 # Examples
 ```julia
-julia> basis_components(Float64, R(), PolBasis{XPol,Y}())
+julia> basis_components(Float64, RPol(), PolBasis{XPol,YPol}())
 2-element StaticArraysCore.SVector{2, ComplexF64} with indices SOneTo(2):
  0.7071067811865475 + 0.0im
                 0.0 - 0.7071067811865475im
 
-julia> basis_components(R(), PolBasis{XPol,Y}())
+julia> basis_components(RPol(), PolBasis{XPol,YPol}())
 2-element StaticArraysCore.SVector{2, ComplexF64} with indices SOneTo(2):
  0.7071067811865475 + 0.0im
                 0.0 - 0.7071067811865475im
 
 
-julia> basis_components(Float64, X(), PolBasis{XPol,Y}())
+julia> basis_components(Float64, XPol(), PolBasis{XPol,YPol}())
 2-element StaticArraysCore.SVector{2, ComplexF64} with indices SOneTo(2):
  1.0 + 0.0im
  0.0 + 0.0im
