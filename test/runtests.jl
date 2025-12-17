@@ -167,7 +167,8 @@ using Test
     end
 
     @testset "Polarized Functions" begin
-        s = StokesParams(2.0, 0.25, -0.25, 0.25)
+        s = StokesParams(I=2.0, Q=0.25, U=-0.25, V=0.25)
+        @test s === StokesParams(I=2.0, V=0.25, U=-0.25, Q=0.25)
         @test linearpol(s) == complex(0.25, -0.25)
         @test evpa(s) ≈ atan(-0.5, 0.5)/2
         @test s[2:end] ≈ polarization(s)
