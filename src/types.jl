@@ -287,10 +287,10 @@ end
 
 @inline function CoherencyMatrix{CirBasis,CirBasis}(s::StokesParams)
     (;I,Q,U,V) = s
-    RR = complex((I + V))
-    LR = (Q - 1im*U)
-    RL = (Q + 1im*U)
-    LL = complex((I - V))
+    RR = complex(I + V)
+    LR = complex(Q, -U)
+    RL = complex(Q, +U)
+    LL = complex(I - V)
     return CoherencyMatrix(RR, LR, RL, LL, CirBasis(), CirBasis())
 end
 
@@ -301,10 +301,10 @@ end
 
 @inline function CoherencyMatrix{LinBasis, LinBasis}(s::StokesParams)
     (;I,Q,U,V) = s
-    XX = (I + Q)
-    YX = (U - 1im*V)
-    XY = (U + 1im*V)
-    YY = (I - Q)
+    XX = complex(I + Q)
+    YX = complex(U, -V)
+    XY = complex(U, +V)
+    YY = complex(I - Q)
     return CoherencyMatrix(XX, YX, XY, YY, LinBasis(), LinBasis())
 end
 
@@ -313,7 +313,7 @@ end
 @inline function StokesParams(c::CoherencyMatrix{CirBasis, CirBasis})
     I = (c.e11 + c.e22)/2
     Q = (c.e21 + c.e12)/2
-    U = 1im*(c.e21 - c.e12)/2
+    U = complex(0, (c.e21 - c.e12)/2)
     V = (c.e11 - c.e22)/2
     return StokesParams(I, Q, U, V)
 end
