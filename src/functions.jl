@@ -3,8 +3,10 @@
 
 Computes `linearpol` from a set of stokes parameters `s`.
 """
-function linearpol(s::StokesParams)
-    return complex(s.Q, s.U)
+function linearpol(s::StokesParams{T}) where {T}
+    Tr = real(T)
+    im = complex(zero(Tr), one(Tr))
+    return s.Q + im * s.U
 end
 
 """
@@ -49,13 +51,12 @@ with length `|L|`.
 function polellipse(s::StokesParams{<:Real})
     l = linearpol(s)
     p = norm(polarization(s))
-    a = (p + abs(l))/2
-    b = (p - abs(l))/2
+    a = (p + abs(l)) / 2
+    b = (p - abs(l)) / 2
     ev = evpa(s)
     sn = sign(s.V)
-    return (;a, b, evpa=ev, sn)
+    return (; a, b, evpa = ev, sn)
 end
-
 
 
 """
@@ -77,7 +78,7 @@ mpol(m::StokesParams) = linearpol(m) / m.I
     evpa(m::Union{StokesParams, CoherencyMatrix})
 Compute the evpa of a stokes vect or cohereny matrix.
 """
-evpa(m::StokesParams) = angle(linearpol(m))/2
+evpa(m::StokesParams) = angle(linearpol(m)) / 2
 
 
 # Now define the functions for Coherency matrix
