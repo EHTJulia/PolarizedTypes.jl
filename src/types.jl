@@ -34,27 +34,24 @@ The vertical or Y electric feed basis, i.e. the vertical linear feed.
 struct YPol <: ElectricFieldBasis end
 
 
-abstract type StokesBasis end
-struct IPol end
-struct QPol end
-struct UPol end
-struct VPol end
+
+
 
 
 """
     $(TYPEDEF)
 
-Denotes a general polarization basis, with basis vectors (B1,B2) which are typically
-`<: Union{ElectricFieldBasis, Missing}`
+Denotes a general polarization basis, with basis vectors (B1,B2) which must be
+`<: ElectricFieldBasis`
 """
-struct PolBasis{B1<:Union{ElectricFieldBasis, Missing}, B2<:Union{ElectricFieldBasis, Missing}} end
+struct PolBasis{B1<:ElectricFieldBasis, B2<:ElectricFieldBasis} end
 
 
 """
     CirBasis <: PolBasis
 
 Measurement uses the circular polarization basis, which is typically used for circular
-feed interferometers.
+feed interferometers. The order is RPol, LPol.
 """
 const CirBasis = PolBasis{RPol,LPol}
 
@@ -62,9 +59,17 @@ const CirBasis = PolBasis{RPol,LPol}
     LinBasis <: PolBasis
 
 Measurement uses the linear polarization basis, which is typically used for linear
-feed interferometers.
+feed interferometers. Tge order is XPol, YPol.
 """
 const LinBasis = PolBasis{XPol,YPol}
+
+const UnionPolBasis = Union{CirBasis, PolBasis{LPol, RPol}, 
+                            LinBasis, PolBasis{YPol, XPol}}
+
+# Horrible hack to automatically promote vectors to use the UnionPolBasis type
+# if applicable.
+Base.promote_rule(::Type{P}, ::Type{P}) where {P<:PolBasis} = P
+Base.promote_rule(::Type{P1}, ::Type{P2}) where {P1 <: UnionPolBasis, P2 <: UnionPolBasis} = UnionPolBasis
 
 
 """
@@ -282,10 +287,11 @@ end
 
 @inline function CoherencyMatrix{CirBasis,CirBasis}(s::StokesParams)
     (;I,Q,U,V) = s
-    RR = complex(I + V)
-    LR = complex(Q, U)
-    RL = complex(Q, -U)
-    LL = complex(I - V)
+    T = real(eltype(s))
+    RR = complex((I + V))
+    LR = (Q - T(1)*im*U)
+    RL = (Q + T(1)*im*U)
+    LL = complex((I - V))
     return CoherencyMatrix(RR, LR, RL, LL, CirBasis(), CirBasis())
 end
 
@@ -296,19 +302,21 @@ end
 
 @inline function CoherencyMatrix{LinBasis, LinBasis}(s::StokesParams)
     (;I,Q,U,V) = s
-    XX = complex(I + Q)
-    YX = complex(U, -V)
-    XY = complex(U, V)
-    YY = complex(I - Q)
+    T = real(eltype(s))
+    XX = (I + Q)
+    YX = (U - T(1)*im*V)
+    XY = (U + T(1)*im*V)
+    YY = (I - Q)
     return CoherencyMatrix(XX, YX, XY, YY, LinBasis(), LinBasis())
 end
 
 
 
 @inline function StokesParams(c::CoherencyMatrix{CirBasis, CirBasis})
+    T = real(eltype(c))
     I = (c.e11 + c.e22)/2
     Q = (c.e21 + c.e12)/2
-    U = complex(0, (c.e21 - c.e12)/2)
+    U = T(1)*im*(c.e21 - c.e12)/2
     V = (c.e11 - c.e22)/2
     return StokesParams(I, Q, U, V)
 end

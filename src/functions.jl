@@ -3,8 +3,10 @@
 
 Computes `linearpol` from a set of stokes parameters `s`.
 """
-function linearpol(s::StokesParams)
-    return complex(s.Q, s.U)
+function linearpol(s::StokesParams{T}) where {T}
+    Tr = real(T)
+    im = complex(zero(Tr), one(Tr))
+    return s.Q + im*s.U
 end
 
 """
