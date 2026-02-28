@@ -7,10 +7,10 @@ using LinearAlgebra
 
 # Write your package code here.
 export StokesParams, CoherencyMatrix, RPol, LPol, XPol, YPol,
-       PolBasis, CirBasis, LinBasis,
-       basis_components, basis_transform, coherencymatrix, stokesparams,
-       linearpol, mbreve, m̆, evpa, polarization, fracpolarization, mpol,
-       polellipse
+    PolBasis, CirBasis, LinBasis,
+    basis_components, basis_transform, coherencymatrix, stokesparams,
+    linearpol, mbreve, m̆, evpa, polarization, fracpolarization, mpol,
+    polellipse
 
 include("types.jl")
 include("basis_transforms.jl")
@@ -30,7 +30,7 @@ include("functions.jl")
         StokesParams(c364)
         StokesParams(c464)
 
-        s32 = StokesParams(1f0 +0im, 5f-1+0im, 5f-1, 5f-1)
+        s32 = StokesParams(1.0f0 + 0im, 5.0f-1 + 0im, 5.0f-1, 5.0f-1)
         c132 = CoherencyMatrix(s32, CirBasis(), CirBasis())
         c232 = CoherencyMatrix(s32, LinBasis(), LinBasis())
         c332 = CoherencyMatrix(s32, CirBasis(), LinBasis())
