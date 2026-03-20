@@ -4,7 +4,7 @@
 Computes `linearpol` from a set of stokes parameters `s`.
 """
 function linearpol(s::StokesParams)
-    return complex(s.Q, s.U)
+    return s.Q + s.U*im
 end
 
 """
