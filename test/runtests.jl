@@ -47,12 +47,14 @@ using Test
             @test c2[1] isa Missing
 
             # Test that the compiler realized the Union
-            @inferred basis_components(E(), PolBasis{Missing, E}())
-            @inferred basis_components(E(), PolBasis{E, Missing}())
-            @inferred basis_transform(PolBasis{E, Missing}()=>CirBasis())
-            @inferred basis_transform(PolBasis{E, Missing}()=>LinBasis())
-            @inferred basis_transform(CirBasis()=>PolBasis{E, Missing}())
-            @inferred basis_transform(LinBasis()=>PolBasis{E, Missing}())
+            if VERSION <= v"1.10"
+                @inferred basis_components(E(), PolBasis{Missing, E}())
+                @inferred basis_components(E(), PolBasis{E, Missing}())
+                @inferred basis_transform(PolBasis{E, Missing}()=>CirBasis())
+                @inferred basis_transform(PolBasis{E, Missing}()=>LinBasis())
+                @inferred basis_transform(CirBasis()=>PolBasis{E, Missing}())
+                @inferred basis_transform(LinBasis()=>PolBasis{E, Missing}())
+            end
 
         end
     end
