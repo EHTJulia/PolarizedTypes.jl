@@ -1,5 +1,5 @@
 """
-    $(SIGNATURES)
+    linearpol(s::StokesParams)
 
 Computes `linearpol` from a set of stokes parameters `s`.
 """
@@ -8,7 +8,7 @@ function linearpol(s::StokesParams)
 end
 
 """
-    $(SIGNATURES)
+    linearpol(s::StokesParams)
 
 Returns the (Q, U, V) polarization vector as a 3-element static vector.
 """
@@ -17,7 +17,7 @@ function polarization(s::StokesParams)
 end
 
 """
-    $(SIGNATURES)
+    polellipse(s::StokesParams)
 
 Returns the polarization ellipse of the Stokes parameters `s`. The results
 is a named tuple with elements
@@ -59,14 +59,14 @@ end
 
 
 """
-    $(SIGNATURES)
+    fracpolarization(s::StokesParams)
 
 Returns the (Q/I, U/I, V/I) fractional polarization vector as a 3-element static vector.
 """
 fracpolarization(s::StokesParams) = polarization(s) / s.I
 
 """
-    mpol(m::StokesParameters{<:Real})
+    mpol(m::StokesParams)
 
 
 Compute the complex fractional linear polarization of a Stokes Parameter `m`
